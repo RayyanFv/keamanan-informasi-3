@@ -1,36 +1,37 @@
 def gcd(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a
+  while b:
+    a, b = b, a % b
+  return a
 
 def mod_inverse(e, phi):
-    for d in range(1, phi):
-        if (e * d) % phi == 1:
-            return d
-    return None
+  for d in range(1, phi):
+    if (e * d) % phi == 1:
+      return d
+  return None
 
-def generate_rsa_keys():
-    p = 101  # Prime 1
-    q = 103  # Prime 2
-    n = p * q
-    phi = (p - 1) * (q - 1)
-    e = 2
-    while e < phi:
-        if gcd(e, phi) == 1:
-            break
-        e += 1
-    d = mod_inverse(e, phi)
-    return (e, n), (d, n)
-def rsa_encrypt(plaintext, public_key):
-    e, n = public_key
-    plaintext_int = int.from_bytes(plaintext.encode('utf-8'), byteorder='big')
-    ciphertext = pow(plaintext_int, e, n)
-    print(f"RSA Encrypt -> Plaintext: {plaintext}, Ciphertext: {ciphertext}")
-    return ciphertext
+def rsa_generate_keys():
+  # Menggunakan p dan q yang sudah ditentukan (tidak lagi random)
+  p = 1151
+  q = 3457
+  n = p * q
+  phi = (p - 1) * (q - 1)
+  
+  # Memilih e yang relatif prima dengan phi
+  e = 2
+  while gcd(e, phi) != 1:
+    e += 1
+  
+  d = mod_inverse(e, phi)
+  public_key = (e, n)
+  private_key = (d, n)
+  return public_key, private_key
 
-def rsa_decrypt(ciphertext, private_key):
-    d, n = private_key
-    plaintext_int = pow(ciphertext, d, n)
-    plaintext = plaintext_int.to_bytes((plaintext_int.bit_length() + 7) // 8, byteorder='big').decode('utf-8')
-    print(f"RSA Decrypt -> Ciphertext: {ciphertext}, Plaintext: {plaintext}")
-    return plaintext
+def rsa_encrypt(public_key, plaintext):
+  e, n = public_key
+  ciphertext = [pow(ord(char), e, n) for char in plaintext]
+  return ciphertext
+
+def rsa_decrypt(private_key, ciphertext):
+  d, n = private_key
+  plaintext = ''.join([chr(pow(char, d, n)) for char in ciphertext])
+  return plaintext
